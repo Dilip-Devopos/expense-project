@@ -1,0 +1,9 @@
+-- Temporarily disable foreign key checks
+SET FOREIGN_KEY_CHECKS = 0;
+select * from expensetracker.users;
+
+UPDATE users
+SET enabled = true
+WHERE email = 'dilipbca99@gmail.com';
+
+SELECT * FROM users WHERE email = 'dilipbca99@gmail.com';
