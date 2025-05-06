@@ -53,3 +53,13 @@ mvn spring-boot:run
 cd ../frontend
 npm install
 npm start
+
+http://localhost:3000/user/statistics
+
+![image](https://github.com/user-attachments/assets/39b84cfc-0075-41ec-b33a-f99c96e62951)
+![image](https://github.com/user-attachments/assets/dd1e6b98-91d3-433d-a7bf-26bce029a662)
+![image](https://github.com/user-attachments/assets/e1aa8a72-a8e0-4f47-bbea-d85b7cec3850)
+![image](https://github.com/user-attachments/assets/f84b4917-386f-4de0-8124-5aa6509293e2)
+
+
+
