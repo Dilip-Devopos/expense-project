@@ -1,16 +1,14 @@
-FROM node:18-alpine
+# Step 1: Use NGINX to serve the build
+FROM nginx:stable-alpine
 
-# Create app directory
-WORKDIR /app
+# Step 2: Remove the default nginx index page
+RUN rm -rf /usr/share/nginx/html/*
 
-# Install serve globally
-RUN npm install -g serve
+# Step 3: Copy the full contents of the React build directory
+COPY build/ /usr/share/nginx/html/
 
-# Copy the build folder (assumes Jenkins copied it)
-COPY build /app/build
+# Step 4: Expose the default port for NGINX
+EXPOSE 80
 
-# Expose port 3000
-EXPOSE 3000
-
-# Serve the build folder
-CMD ["serve", "-s", "build", "-l", "3000"]
+# Step 5: Start the NGINX server
+CMD ["nginx", "-g", "daemon off;"]
