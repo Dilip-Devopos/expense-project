@@ -6,7 +6,7 @@ RUN rm -rf /usr/share/nginx/html/*
 
 # Step 3: Copy the pre-built frontend build directory into the container
 # Ensure that the build folder is in the same directory as your Dockerfile
-COPY build /usr/share/nginx/html
+COPY build/* /usr/share/nginx/html/
 
 # Step 4: Expose the default port for NGINX
 EXPOSE 80
