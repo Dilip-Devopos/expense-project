@@ -1,0 +1,123 @@
+pipeline {
+    agent {
+        docker {
+            image 'kdilipkumar/jenkins-agent-frontend:v1'
+            args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
+
+    environment {
+        DOCKER_IMAGE = "kdilipkumar/frontend:v${BUILD_NUMBER}"
+    }
+    
+    stages {
+        stage('Cleanup') {
+            steps {
+                sh 'rm -rf expense-project || true'
+            }
+        }
+
+        stage('Checkout Repository') {
+            steps {
+                sh '''
+                    echo "Cloning repository..."
+                    git clone https://github.com/Dilip-Devopos/expense-project.git
+                '''
+            }
+        }
+
+        stage('Setup & Build Web') {
+            steps {
+                sh 'cd expense-project/frontend && npm install && CI=false npm run build'
+            }
+        }
+
+        stage('Static Code Analysis') {
+            environment {
+                SONAR_URL = "http://192.168.0.180:9000"
+            }
+            steps {
+                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+                    sh '''
+                        cd expense-project/frontend
+                        sonar-scanner -Dsonar.projectKey=expense-project-frontend -Dsonar.sources=. -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}
+                    '''
+                }
+            }
+        }
+
+        stage('Archive Build Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'expense-project/frontend/build/**', fingerprint: true
+            }   
+        }
+
+        stage('Download Latest Artifact and Verify') {
+            steps {
+                script {
+                    sh '''
+                        # Copy the WAR file to the required location
+                        cp -r expense-project/frontend/build /home/jenkins/download_artifact/build/
+                        # Verify the copied files
+                        ls /home/jenkins/download_artifact/build/
+                    '''
+                }
+            }
+        }
+
+        stage('OWASP Dependency-Check Vulnerabilities') {
+            steps {
+                script {
+                    sh '''
+                        /opt/dependency-check/bin/dependency-check.sh \
+                        --project "expense-project" \
+                        --scan /home/jenkins/download_artifact/build/ \
+                        --out dependency-check-reports \
+                        --format "XML"
+                    '''
+                    sh 'chown -R jenkins:jenkins dependency-check-reports'
+                    sh 'chmod 644 dependency-check-reports/*.xml'
+                    sh 'ls -la dependency-check-reports'
+                }
+                dependencyCheckPublisher pattern: 'dependency-check-reports/*.xml'
+            }
+        }
+
+        stage('Build Docker Image') {
+            environment {
+                DOCKERFILE_LOCATION = "expense-project/frontend/Dockerfile"
+            }
+            steps {
+                script {
+                    sh 'cd expense-project/frontend && docker build -t ${DOCKER_IMAGE} .'
+                }
+            }
+        }
+
+        stage('Security Scan with Trivy') {
+            steps {
+                script {
+                    sh '''
+                        echo "Running Trivy vulnerability scan..."
+                        trivy --version
+                        trivy image --severity HIGH,CRITICAL ${DOCKER_IMAGE}
+                    '''
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            environment {
+                REGISTRY_CREDENTIALS = credentials('docker-cred')
+            }
+            steps {
+                script {
+                    def dockerImage = docker.image("${DOCKER_IMAGE}")
+                    docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+    }
+}
