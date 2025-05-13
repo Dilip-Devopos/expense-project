@@ -1,10 +1,19 @@
 FROM openjdk:17-jdk-alpine
 
-# Copy the WAR file from target directory to container
+# Create the directory where the profile images will be saved
+RUN mkdir -p /app/uploads/user/profile
+
+# Set working directory to /app so that relative paths in Spring Boot work correctly
+WORKDIR /app
+
+# Copy the jar file to the container
 COPY /target/expenseTracker-0.0.1-SNAPSHOT.jar /app.jar
 
-# Set the command to run the WAR file
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Make sure Spring Boot has permission to write to the upload folder
+RUN chmod -R 777 /app/uploads
 
-# Expose the port that your Spring Boot app will run on (8765)
+# Expose the port Spring Boot runs on
 EXPOSE 8080
+
+# Run the app
+ENTRYPOINT ["java", "-jar", "/app.jar"]
