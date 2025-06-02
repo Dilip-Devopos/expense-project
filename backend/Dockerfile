@@ -1,4 +1,4 @@
-openjdk:17-jdk-alpine
+FROM openjdk:17-jdk-alpine
 
 # Create the directory where the profile images will be saved
 RUN mkdir -p /app/uploads/user/profile
