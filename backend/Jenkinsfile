@@ -11,7 +11,7 @@ pipeline {
     }
     
     stages {
-        stage('Cleanup') {
+        ('Cleanup') {
             steps {
                 sh 'rm -rf expense-project || true'
             }
