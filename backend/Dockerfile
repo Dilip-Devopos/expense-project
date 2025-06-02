@@ -16,4 +16,4 @@ RUN chmod -R 777 /app/uploads
 EXPOSE 8080
 
 # Run the app
-ENTRYPOIN ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "/app.jar"]
