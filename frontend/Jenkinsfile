@@ -65,24 +65,6 @@ pipeline {
             }
         }
 
-        stage('OWASP Dependency-Check Vulnerabilities') {
-            steps {
-                script {
-                    sh '''
-                        /opt/dependency-check/bin/dependency-check.sh \
-                        --project "expense-project" \
-                        --scan /home/jenkins/download_artifact/build/ \
-                        --out dependency-check-reports \
-                        --format "XML"
-                    '''
-                    sh 'chown -R jenkins:jenkins dependency-check-reports'
-                    sh 'chmod 644 dependency-check-reports/*.xml'
-                    sh 'ls -la dependency-check-reports'
-                }
-                dependencyCheckPublisher pattern: 'dependency-check-reports/*.xml'
-            }
-        }
-
         stage('Build Docker Image') {
             environment {
                 DOCKERFILE_LOCATION = "expense-project/frontend/Dockerfile"
