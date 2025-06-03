@@ -12,6 +12,7 @@ Make sure the following are installed on your system:
 - 🟩 Node.js **v22.15.0**  
 - 🐬 MySQL **8.0.33**  
 - 📦 Apache Maven **3.9.9**  
+- snyk https://medium.com/@eshikashah2001/automating-security-with-snyk-and-jenkins-2060e9b95cd2
 
 ---
 
